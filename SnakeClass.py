@@ -8,22 +8,22 @@ class Snake:
   def updateHead(self, eatFood = False):
     if(eatFood):
       self.body.append()
-      for i in xrange(self.headIndex+1,len(self.body)):   #can be optimized
-        body[i] = body[i-1]
+      for i in range(self.headIndex+1,len(self.body)):   #can be optimized
+        self.body[i] = self.body[i-1]
 
     newHeadIndex = (self.headIndex+1) % len(body)
     self.body[newHeadIndex] = self.body[self.headIndex]
-    match headDirection:    #using case-switch equivalent from https://docs.python.org/3.10/whatsnew/3.10.html#pep-634-structural-pattern-matching
+    match self.headDirection:    #using case-switch equivalent from https://docs.python.org/3.10/whatsnew/3.10.html#pep-634-structural-pattern-matching
       case 0:
-        self.body[newHeaderIndex][0] = self.body[newHeaderIndex][0]+1
+        self.body[newHeadIndex][0] = self.body[newHeadIndex][0]+1
       case 1:
-        self.body[newHeaderIndex][1] = self.body[newHeaderIndex][1]+1
+        self.body[newHeadIndex][1] = self.body[newHeadIndex][1]+1
       case 2:
-        self.body[newHeaderIndex][0] = self.body[newHeaderIndex][0]-1
+        self.body[newHeadIndex][0] = self.body[newHeadIndex][0]-1
       case _:
-        self.body[newHeaderIndex][1] = self.body[newHeaderIndex][1]-1
+        self.body[newHeadIndex][1] = self.body[newHeadIndex][1]-1
 
-    self.headIndex = newHeaderIndex
+    self.headIndex = newHeadIndex
     self.checkCollision()
   
   def checkCollision(self, maxXVal, maxYVal):
