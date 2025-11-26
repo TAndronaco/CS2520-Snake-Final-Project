@@ -12,6 +12,12 @@ SPEED = 10
 # INITIALIZE PYGAME
 pygame.init()
 
+# MOVEMENT KEY:
+# 1 = RIGHT
+# 2 = LEFT
+# 3 = UP
+# 4 = DOWN
+
 class Snake:
 
   # INITIALIZE GAME
@@ -29,21 +35,35 @@ class Snake:
     self.reset()
 
 
+  # MOVE FUNCTION
+  def move(self, direction):
+    # Store x and y coordinates of snake head
+    x = self.head[0]
+    y = self.head[1]
+
+    # Update coordinates based on movement direction
+    if direction == 3:
+      y -= BLOCK_SIZE
+    elif direction == 4:
+      y += BLOCK_SIZE
+    elif direction == 1:
+      x += BLOCK_SIZE
+    elif direction == 2:
+      x -= BLOCK_SIZE
+
+    # Store new coordinates as the new snake head
+    self.head = [x, y]
+
+
   # RESET FUNCTION
   def reset(self):
+    # Declare initial state (direction, snake head, snake body)
+    self.direction = 1
     self.head = [WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2]
     self.snake = [self.head, [self.head[0] - BLOCK_SIZE, self.head[1]], [self.head[0] - (BLOCK_SIZE * 2), self.head[1]]]
-    
-  # PLAY FUNCTION
-  def play(self):
-    for event in pygame.event.get():
-      # Quit Event
-      if event.type == pygame.QUIT:
-        pygame.quit()
-        exit()
 
-    self.update()
 
+  # UPDATE FUNCTION
   def update(self):
     # Fill current frame black
     self.display.fill('black')
@@ -56,6 +76,35 @@ class Snake:
     # Update display
     pygame.display.flip()
 
+
+  # PLAY FUNCTION
+  def play(self):
+    for event in pygame.event.get():
+      # Quit Event
+      if event.type == pygame.QUIT:
+        pygame.quit()
+        exit()
+
+      # Player input events
+      if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_w and self.direction != 4:
+          self.direction = 3
+        elif event.key == pygame.K_s and self.direction != 3:
+          self.direction = 4
+        elif event.key == pygame.K_a and self.direction != 1:
+          self.direction = 2
+        elif event.key == pygame.K_d and self.direction != 2:
+          self.direction = 1
+
+    # Snake movement implementation (insert new snake head into the front of the snake body array, pop the last element in the snake body array)
+    self.move(self.direction)
+    self.snake.insert(0, self.head)
+
+    self.snake.pop() # Temporary location (Location will be changed when food system is implemented)
+
+    # Update frame & declare frame rate
+    self.update()
+    self.clock.tick(SPEED)
     
 
   # def updateHead(self, eatFood = False):
