@@ -18,6 +18,7 @@ pygame.init()
 # 3 = UP
 # 4 = DOWN
 
+
 class Snake:
 
   # INITIALIZE GAME
@@ -31,7 +32,7 @@ class Snake:
     pygame.display.set_caption('Snake')
     self.clock = pygame.time.Clock()
 
-    # Call reset function to start game
+    # Call reset function to start game in initial state
     self.reset()
 
 
@@ -136,6 +137,7 @@ class Snake:
   #         self.gameState = False
 
   #     #checking spikes code can go here
+
 
 if __name__ == '__main__':
   game = Snake()
