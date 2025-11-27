@@ -1,3 +1,5 @@
+# Thaimas Andronaco, Clarence Dufault, Carlo Gabarda, Patrick Hwang, Cynthia Nguyen
+
 # IMPORT LIBRARIES
 import pygame
 import random
