@@ -14,11 +14,11 @@ SPEED = 10
 # INITIALIZE PYGAME
 pygame.init()
 
-# MOVEMENT KEY:
-# 1 = RIGHT
-# 2 = LEFT
-# 3 = UP
-# 4 = DOWN
+# MOVEMENT KEY
+RIGHT = 1
+LEFT = 2
+UP = 3
+DOWN = 4
 
 
 class Snake:
@@ -45,13 +45,13 @@ class Snake:
     y = self.head[1]
 
     # Update coordinates based on movement direction
-    if direction == 3:
+    if direction == UP:
       y -= BLOCK_SIZE
-    elif direction == 4:
+    elif direction == DOWN:
       y += BLOCK_SIZE
-    elif direction == 1:
+    elif direction == RIGHT:
       x += BLOCK_SIZE
-    elif direction == 2:
+    elif direction == LEFT:
       x -= BLOCK_SIZE
 
     # Store new coordinates as the new snake head
@@ -90,14 +90,14 @@ class Snake:
 
       # Player input events
       if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_w and self.direction != 4:
-          self.direction = 3
-        elif event.key == pygame.K_s and self.direction != 3:
-          self.direction = 4
-        elif event.key == pygame.K_a and self.direction != 1:
-          self.direction = 2
-        elif event.key == pygame.K_d and self.direction != 2:
-          self.direction = 1
+        if event.key == pygame.K_w and self.direction != DOWN:
+          self.direction = UP
+        elif event.key == pygame.K_s and self.direction != UP:
+          self.direction = DOWN
+        elif event.key == pygame.K_a and self.direction != RIGHT:
+          self.direction = LEFT
+        elif event.key == pygame.K_d and self.direction != LEFT:
+          self.direction = RIGHT
 
     # Snake movement implementation (insert new snake head into the front of the snake body array, pop the last element in the snake body array)
     self.move(self.direction)
