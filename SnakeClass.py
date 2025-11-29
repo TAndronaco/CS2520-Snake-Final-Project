@@ -55,15 +55,29 @@ class Snake:
       x -= BLOCK_SIZE
 
     # Store new coordinates as the new snake head
-    self.head = [x, y]
+    self.head = (x, y)
+
+  
+  # PLACE FOOD FUNCTION
+  def placeFood(self):
+    # Generate random x and y coordinates where food can spawn
+    x = random.randrange(0, WINDOW_WIDTH, BLOCK_SIZE)
+    y = random.randrange(0, WINDOW_HEIGHT, BLOCK_SIZE)
+
+    # Store food coordinates, generate food coordinates again if food coordinates appear in snake coordinates
+    self.food = (x, y)
+    if self.food in self.snake:
+      self.placeFood()
 
 
   # RESET FUNCTION
   def reset(self):
-    # Declare initial state (direction, snake head, snake body)
+    # Declare initial state (direction, snake head, snake body, food, placefood)
     self.direction = 1
     self.head = [WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2]
     self.snake = [self.head, [self.head[0] - BLOCK_SIZE, self.head[1]], [self.head[0] - (BLOCK_SIZE * 2), self.head[1]]]
+    self.food = None
+    self.placeFood()
 
 
   # UPDATE FUNCTION
@@ -75,6 +89,10 @@ class Snake:
     for pos in self.snake:
       snake_rect = pygame.Rect((pos[0], pos[1]), (BLOCK_SIZE, BLOCK_SIZE))
       pygame.draw.rect(self.display, 'Green', snake_rect)
+
+    # Display food onto current frame
+    food_rect = pygame.Rect((self.food[0], self.food[1]), (BLOCK_SIZE, BLOCK_SIZE))
+    pygame.draw.rect(self.display, 'Red', food_rect)
 
     # Update display
     pygame.display.flip()
@@ -103,7 +121,11 @@ class Snake:
     self.move(self.direction)
     self.snake.insert(0, self.head)
 
-    self.snake.pop() # Temporary location (Location will be changed when food system is implemented)
+    # Eating mechanic, if head collides with food then we place another food and don't pop the snake array (grow snake), else pop the snake array
+    if self.head == self.food:
+      self.placeFood()
+    else:
+      self.snake.pop()
 
     # Update frame & declare frame rate
     self.update()
