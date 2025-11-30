@@ -9,7 +9,7 @@ from sys import exit
 WINDOW_HEIGHT = 800
 WINDOW_WIDTH = 800
 HEIGHT_OFFSET = 100
-BLOCK_SIZE = 20
+BLOCK_SIZE = 20 # Possible method to increase map size (decreasing block size)
 SPEED = 10
 
 # INITIALIZE PYGAME
@@ -70,9 +70,11 @@ class Snake:
     if self.food in self.snake:
       self.placeFood()
 
-  
+
+  # COLLISION DETECTION
   def collision(self):
-    if (self.head in self.snake[1:]) or (self.head[1] <= HEIGHT_OFFSET) or (self.head[1] >= WINDOW_HEIGHT) or (self.head[0] >= WINDOW_WIDTH) or (self.head[0] < 0):
+    # Return true of head collides with body or bumps into the borders
+    if (self.head in self.snake[1:]) or (self.head[1] < HEIGHT_OFFSET) or (self.head[1] >= WINDOW_HEIGHT) or (self.head[0] >= WINDOW_WIDTH) or (self.head[0] < 0):
       return True
     return False
 
@@ -91,6 +93,12 @@ class Snake:
   def update(self):
     # Fill current frame black
     self.display.fill('black')
+
+    # Create a grid
+    for x in range(0, WINDOW_WIDTH, BLOCK_SIZE):
+      for y in range(HEIGHT_OFFSET, WINDOW_HEIGHT, BLOCK_SIZE):
+        grid_rect = pygame.Rect((x, y), (BLOCK_SIZE, BLOCK_SIZE))
+        pygame.draw.rect(self.display, 'gray9', grid_rect, 1)
 
     # Display snake onto the current frame
     for pos in self.snake:
@@ -134,6 +142,7 @@ class Snake:
     else:
       self.snake.pop()
 
+    # End game if collision happens
     if self.collision():
       return True
 
