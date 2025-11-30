@@ -21,6 +21,8 @@ LEFT = 2
 UP = 3
 DOWN = 4
 
+# INITIALIZE FONT
+font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 60)
 
 class Snake:
 
@@ -81,7 +83,8 @@ class Snake:
 
   # RESET FUNCTION
   def reset(self):
-    # Declare initial state (direction, snake head, snake body, food, placefood)
+    # Declare initial state (score, direction, snake head, snake body, food, placefood)
+    self.score = 0
     self.direction = 1
     self.head = [WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2]
     self.snake = [self.head, [self.head[0] - BLOCK_SIZE, self.head[1]], [self.head[0] - (BLOCK_SIZE * 2), self.head[1]]]
@@ -108,6 +111,10 @@ class Snake:
     # Display food onto current frame
     food_rect = pygame.Rect((self.food[0], self.food[1]), (BLOCK_SIZE, BLOCK_SIZE))
     pygame.draw.rect(self.display, 'Red', food_rect)
+
+    # Display player score
+    score_text = font.render('Score: ' + str(self.score), True, 'White')
+    self.display.blit(score_text, (25, 25))
 
     # Update display
     pygame.display.flip()
@@ -136,9 +143,10 @@ class Snake:
     self.move(self.direction)
     self.snake.insert(0, self.head)
 
-    # Eating mechanic, if head collides with food then we place another food and don't pop the snake array (grow snake), else pop the snake array
+    # Eating mechanic, if head collides with food then we place another food, increase score, and don't pop the snake array (grow snake), else pop the snake array
     if self.head == self.food:
       self.placeFood()
+      self.score += 1
     else:
       self.snake.pop()
 
