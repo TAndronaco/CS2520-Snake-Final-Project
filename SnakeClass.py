@@ -8,6 +8,7 @@ from sys import exit
 # DEFINE CONSTANTS
 WINDOW_HEIGHT = 800
 WINDOW_WIDTH = 800
+HEIGHT_OFFSET = 100
 BLOCK_SIZE = 20
 SPEED = 10
 
@@ -62,12 +63,18 @@ class Snake:
   def placeFood(self):
     # Generate random x and y coordinates where food can spawn
     x = random.randrange(0, WINDOW_WIDTH, BLOCK_SIZE)
-    y = random.randrange(0, WINDOW_HEIGHT, BLOCK_SIZE)
+    y = random.randrange(HEIGHT_OFFSET, WINDOW_HEIGHT, BLOCK_SIZE)
 
     # Store food coordinates, generate food coordinates again if food coordinates appear in snake coordinates
     self.food = (x, y)
     if self.food in self.snake:
       self.placeFood()
+
+  
+  def collision(self):
+    if (self.head in self.snake[1:]) or (self.head[1] <= HEIGHT_OFFSET) or (self.head[1] >= WINDOW_HEIGHT) or (self.head[0] >= WINDOW_WIDTH) or (self.head[0] < 0):
+      return True
+    return False
 
 
   # RESET FUNCTION
@@ -126,6 +133,9 @@ class Snake:
       self.placeFood()
     else:
       self.snake.pop()
+
+    if self.collision():
+      return True
 
     # Update frame & declare frame rate
     self.update()
