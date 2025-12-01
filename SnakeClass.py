@@ -21,8 +21,10 @@ LEFT = 2
 UP = 3
 DOWN = 4
 
-# INITIALIZE FONT
-font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 60)
+# INITIALIZE FONTS
+score_font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 60)
+title_font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 80)
+small_font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 40)
 
 class Snake:
 
@@ -114,16 +116,15 @@ class Snake:
     pygame.draw.rect(self.display, 'Red', food_rect)
 
     # Display player score
-    score_text = font.render('Score: ' + str(self.score), True, 'White')
+    score_text = score_font.render('Score: ' + str(self.score), True, 'White')
     self.display.blit(score_text, (25, 25))
 
     # Update display
     pygame.display.flip()
 
-  def start_menu(self):
-    title_font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 80)
-    small_font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 40)
 
+  # START MENU FUNCTION
+  def start_menu(self):
     while True:
       self.display.fill('black')
 
@@ -148,8 +149,10 @@ class Snake:
           if event.key == pygame.K_SPACE:
             return  # leave start menu and begin game
 
-      self.clock.tick(15)
+      self.clock.tick(SPEED)
 
+
+  # GAME OVER MENU FUNCTION
   def game_over_menu(self):
     title_font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 80)
     small_font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 40)
@@ -194,17 +197,19 @@ class Snake:
             pygame.quit()
             exit()
 
-      self.clock.tick(10)
+      self.clock.tick(SPEED)
 
 
   # PLAY FUNCTION
   def play(self):
     # Player input events
     for event in pygame.event.get():
+        # Quit game if user closes tab
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
 
+        # Movement key inputs
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w and self.direction != DOWN:
                 self.next_direction = UP
@@ -277,6 +282,3 @@ if __name__ == '__main__':
 
     if game_over:
       game.game_over_menu()
-  
-  pygame.quit()
-  exit()
