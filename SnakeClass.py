@@ -6,10 +6,11 @@ import random
 from sys import exit
 
 # DEFINE CONSTANTS
-WINDOW_HEIGHT = 800
-WINDOW_WIDTH = 800
-HEIGHT_OFFSET = 100
-BLOCK_SIZE = 20 # Possible method to increase map size (decreasing block size)
+WINDOW_HEIGHT = 1000
+WINDOW_WIDTH = 1000
+SCORE_OFFSET = 100
+OFFSET = 320
+BLOCK_SIZE = 20
 SPEED = 10
 
 # INITIALIZE PYGAME
@@ -30,9 +31,10 @@ class Snake:
 
   # INITIALIZE GAME
   def __init__(self):
-    # Define window height and width
+    # Define window height, width, and block size
     self.w = WINDOW_WIDTH
     self.h = WINDOW_HEIGHT
+    self.block_size = BLOCK_SIZE
 
     # Declare pygame display and clock
     self.display = pygame.display.set_mode((self.w, self.h))
@@ -41,86 +43,6 @@ class Snake:
 
     # Call reset function to start game in initial state
     self.reset()
-
-
-  # MOVE FUNCTION
-  def move(self, direction):
-    # Store x and y coordinates of snake head
-    x = self.head[0]
-    y = self.head[1]
-
-    # Update coordinates based on movement direction
-    if direction == UP:
-      y -= BLOCK_SIZE
-    elif direction == DOWN:
-      y += BLOCK_SIZE
-    elif direction == RIGHT:
-      x += BLOCK_SIZE
-    elif direction == LEFT:
-      x -= BLOCK_SIZE
-
-    # Store new coordinates as the new snake head
-    self.head = (x, y)
-
-  
-  # PLACE FOOD FUNCTION
-  def placeFood(self):
-    # Generate random x and y coordinates where food can spawn
-    x = random.randrange(0, WINDOW_WIDTH, BLOCK_SIZE)
-    y = random.randrange(HEIGHT_OFFSET, WINDOW_HEIGHT, BLOCK_SIZE)
-
-    # Store food coordinates, generate food coordinates again if food coordinates appear in snake coordinates
-    self.food = (x, y)
-    if self.food in self.snake:
-      self.placeFood()
-
-
-  # COLLISION DETECTION
-  def collision(self):
-    # Return true of head collides with body or bumps into the borders
-    if (self.head in self.snake[1:]) or (self.head[1] < HEIGHT_OFFSET) or (self.head[1] >= WINDOW_HEIGHT) or (self.head[0] >= WINDOW_WIDTH) or (self.head[0] < 0):
-      return True
-    return False
-
-
-  # RESET FUNCTION
-  def reset(self):
-    # Declare initial state (score, direction, snake head, snake body, food, placefood)
-    self.score = 0
-    self.direction = 1
-    self.next_direction = self.direction
-    self.head = [WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2]
-    self.snake = [self.head, [self.head[0] - BLOCK_SIZE, self.head[1]], [self.head[0] - (BLOCK_SIZE * 2), self.head[1]]]
-    self.food = None
-    self.placeFood()
-
-
-  # UPDATE FUNCTION
-  def update(self):
-    # Fill current frame black
-    self.display.fill('black')
-
-    # Create a grid
-    for x in range(0, WINDOW_WIDTH, BLOCK_SIZE):
-      for y in range(HEIGHT_OFFSET, WINDOW_HEIGHT, BLOCK_SIZE):
-        grid_rect = pygame.Rect((x, y), (BLOCK_SIZE, BLOCK_SIZE))
-        pygame.draw.rect(self.display, 'gray9', grid_rect, 1)
-
-    # Display snake onto the current frame
-    for pos in self.snake:
-      snake_rect = pygame.Rect((pos[0], pos[1]), (BLOCK_SIZE, BLOCK_SIZE))
-      pygame.draw.rect(self.display, 'Green', snake_rect)
-
-    # Display food onto current frame
-    food_rect = pygame.Rect((self.food[0], self.food[1]), (BLOCK_SIZE, BLOCK_SIZE))
-    pygame.draw.rect(self.display, 'Red', food_rect)
-
-    # Display player score
-    score_text = score_font.render('Score: ' + str(self.score), True, 'White')
-    self.display.blit(score_text, (25, 25))
-
-    # Update display
-    pygame.display.flip()
 
 
   # START MENU FUNCTION
@@ -154,9 +76,6 @@ class Snake:
 
   # GAME OVER MENU FUNCTION
   def game_over_menu(self):
-    title_font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 80)
-    small_font = pygame.font.Font('resources/EXEPixelPerfect.ttf', 40)
-
     while True:
       self.display.fill('black')
 
@@ -200,6 +119,124 @@ class Snake:
       self.clock.tick(SPEED)
 
 
+  # RESET FUNCTION
+  def reset(self):
+    # Declare initial state (score, expand_level, offset, direction, snake head, snake body, food, placefood)
+    self.score = 0
+    self.score_goal = 10
+    self.expand_level = 0
+    self.offset = OFFSET
+    self.direction = RIGHT
+    self.next_direction = self.direction
+    self.head = [self.w / 2, self.h / 2]
+    self.snake = [self.head, [self.head[0] - self.block_size, self.head[1]], [self.head[0] - (self.block_size * 2), self.head[1]]]
+    self.food = None
+    self.placeFood()
+
+
+  # MOVE FUNCTION
+  def move(self, direction):
+    # Store x and y coordinates of snake head
+    x = self.head[0]
+    y = self.head[1]
+
+    # Update coordinates based on movement direction
+    if direction == UP:
+      y -= self.block_size
+    elif direction == DOWN:
+      y += self.block_size
+    elif direction == RIGHT:
+      x += self.block_size
+    elif direction == LEFT:
+      x -= self.block_size
+
+    # Store new coordinates as the new snake head
+    self.head = (x, y)
+
+  
+  # PLACE FOOD FUNCTION
+  def placeFood(self):
+    # Generate random x and y coordinates where food can spawn
+    x = random.randrange(self.offset, (self.w - self.offset), self.block_size)
+    y = random.randrange(SCORE_OFFSET + self.offset, (self.h - self.offset), self.block_size)
+
+    # Store food coordinates, generate food coordinates again if food coordinates appear in snake coordinates
+    self.food = (x, y)
+    if self.food in self.snake:
+      self.placeFood()
+
+
+  # COLLISION DETECTION
+  def collision(self):
+    # Return true of head collides with body or bumps into the borders
+    if (self.head in self.snake[1:]) or (self.head[1] < (self.offset + SCORE_OFFSET)) or (self.head[1] >= (self.h - self.offset)) or (self.head[0] >= (self.w - self.offset)) or (self.head[0] < self.offset):
+      return True
+    return False
+
+
+  # EXPAND GRID FUNCTION
+  def expand(self):
+    # Declare counter and text appear boolean
+    num_times = 0
+    appear = True
+
+    # Loop to flash text onto screen
+    while True:
+      if appear:
+        self.display.fill('black')
+        expand_text = title_font.render('GRID EXPANSION', True, 'White')
+        text_rect = expand_text.get_rect(center=(self.h / 2, self.w / 2))
+        self.display.blit(expand_text, text_rect)
+        appear = False
+        num_times += 1
+      else:
+        self.display.fill('black')
+        appear = True
+
+      # Update Display
+      pygame.display.update()
+      self.clock.tick(SPEED)
+
+      # Break after the text appears 10 times, adjust the offset to make the grid bigger, then return
+      if num_times == 10:
+        self.offset -= 80
+        return
+        
+
+  # UPDATE FUNCTION
+  def update(self):
+    # Fill current frame black
+    self.display.fill('black')
+
+    # Create a grid
+    for x in range(self.offset, (self.w - self.offset), self.block_size):
+      for y in range((SCORE_OFFSET + self.offset), (self.h - self.offset), self.block_size):
+        grid_rect = pygame.Rect((x, y), (self.block_size, self.block_size))
+        pygame.draw.rect(self.display, 'gray9', grid_rect, 1)
+
+    # Display snake onto the current frame
+    for pos in self.snake:
+      snake_rect = pygame.Rect((pos[0], pos[1]), (self.block_size, self.block_size))
+      pygame.draw.rect(self.display, 'Green', snake_rect)
+
+    # Display food onto current frame
+    food_rect = pygame.Rect((self.food[0], self.food[1]), (self.block_size, self.block_size))
+    pygame.draw.rect(self.display, 'Red', food_rect)
+
+    # Display player score
+    score_text = score_font.render(f'Score: {str(self.score)}', True, 'White')
+    self.display.blit(score_text, (25, 25))
+
+    # Display score goal
+    if self.expand_level != 4:
+      goal_text = score_font.render(f'Next Goal: {str(self.score_goal)}', True, 'White')
+      goal_rect = goal_text.get_rect(topright=(self.w - 25, 25))
+      self.display.blit(goal_text, goal_rect)
+
+    # Update display
+    pygame.display.flip()
+
+
   # PLAY FUNCTION
   def play(self):
     # Player input events
@@ -224,7 +261,6 @@ class Snake:
     # Snake movement implementation (insert new snake head into the front of the snake body array, pop the last element in the snake body array)
     self.direction = self.next_direction
     self.move(self.direction)
-
     self.snake.insert(0, self.head)
 
     # Eating mechanic, if head collides with food then we place another food, increase score, and don't pop the snake array (grow snake), else pop the snake array
@@ -237,43 +273,19 @@ class Snake:
     # End game if collision happens
     if self.collision():
       return True
+    
+    if (self.expand_level != 4) and (self.score == self.score_goal):
+      if self.expand():
+        return True
+      self.expand_level += 1
+      self.score_goal += 20
 
     # Update frame & declare frame rate
     self.update()
     self.clock.tick(SPEED)
-    
-
-  # def updateHead(self, eatFood = False):
-  #   if(eatFood):
-  #     self.body.append()
-  #     for i in range(self.headIndex+1,len(self.body)):   #can be optimized
-  #       body[i] = body[i-1]
-
-  #   newHeadIndex = (self.headIndex+1) % len(body)
-  #   self.body[newHeadIndex] = self.body[self.headIndex]
-  #   match headDirection:    #using case-switch equivalent from https://docs.python.org/3.10/whatsnew/3.10.html#pep-634-structural-pattern-matching
-  #     case 0:
-  #       self.body[newHeaderIndex][0] = self.body[newHeaderIndex][0]+1
-  #     case 1:
-  #       self.body[newHeaderIndex][1] = self.body[newHeaderIndex][1]+1
-  #     case 2:
-  #       self.body[newHeaderIndex][0] = self.body[newHeaderIndex][0]-1
-  #     case _:
-  #       self.body[newHeaderIndex][1] = self.body[newHeaderIndex][1]-1
-
-  #   self.headIndex = newHeaderIndex
-  #   self.checkCollision()
-  
-  # def checkCollision(self, maxXVal, maxYVal):
-  #   head = self.body[self.headIndex]
-  #   if(head[0] > maxXVal or head[1] > maxYVal):
-  #     for i in range(len(self.body)):
-  #       if ( self.body[i] == head and i != self.headIndex ):
-  #         self.gameState = False
-
-  #     #checking spikes code can go here
 
 
+# Main
 if __name__ == '__main__':
   game = Snake()
   game.start_menu()
