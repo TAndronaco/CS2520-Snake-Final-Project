@@ -4,6 +4,7 @@
 import pygame
 import random
 from sys import exit
+from scores import save_score, get_top_scores
 
 # DEFINE CONSTANTS
 WINDOW_HEIGHT = 1000
@@ -107,27 +108,40 @@ class Snake:
 
   # GAME OVER MENU FUNCTION
   def game_over_menu(self):
+    save_score(self.score)
+    top_score = get_top_scores(self.score)
+
     while True:
       self.display.fill('black')
 
       # GAME OVER text
       over_text = title_font.render("GAME OVER", True, 'red')
-      over_rect = over_text.get_rect(center=(self.w // 2, self.h // 2 - 100))
+      over_rect = over_text.get_rect(center=(self.w // 2, self.h // 2 - 150))
       self.display.blit(over_text, over_rect)
 
       # Score
       score_text = small_font.render(f"Score: {self.score}", True, 'white')
-      score_rect = score_text.get_rect(center=(self.w // 2, self.h // 2))
+      score_rect = score_text.get_rect(center=(self.w // 2, self.h // 2 - 80))
       self.display.blit(score_text, score_rect)
+
+      # High Scores
+      hs_title = small_font.render("High Scores:", True, 'white')
+      hs_rect = hs_title.get_rect(center=(self.w // 2, self.h // 2))
+      self.display.blit(hs_title, hs_rect)
+
+      for i, s in enumerate(top_score):
+        text = small_font.render(f"{i+1}. {s}", True, 'white')
+        text_rect = text.get_rect(center=(self.w // 2, self.h // 2 + 40 + i * 40))
+        self.display.blit(text, text_rect)
 
       # Restart instructions
       restart_text = small_font.render("Press SPACE to Play Again", True, 'white')
-      restart_rect = restart_text.get_rect(center=(self.w // 2, self.h // 2 + 100))
+      restart_rect = restart_text.get_rect(center=(self.w // 2, self.h // 2 + 40 + len(top_score) * 40 + 40))
       self.display.blit(restart_text, restart_rect)
 
       # Quit instructions
       quit_text = small_font.render("Press Q to Quit", True, 'white')
-      quit_rect = quit_text.get_rect(center=(self.w // 2, self.h // 2 + 160))
+      quit_rect = quit_text.get_rect(center=(self.w // 2, self.h // 2 + 40 + len(top_score) * 40 + 100))
       self.display.blit(quit_text, quit_rect)
 
       pygame.display.update()
