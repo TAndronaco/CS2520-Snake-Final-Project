@@ -12,6 +12,7 @@ SCORE_OFFSET = 100
 OFFSET = 320
 BLOCK_SIZE = 20
 SPEED = 10
+SPIKE_DELAY = 10000
 
 # INITIALIZE PYGAME
 pygame.init()
@@ -43,6 +44,36 @@ class Snake:
 
     # Call reset function to start game in initial state
     self.reset()
+
+
+  # UPDATE FUNCTION
+  def update(self):
+    # Fill current frame black
+    self.display.fill('black')
+
+    # Create a grid
+    for x in range(0, WINDOW_WIDTH, BLOCK_SIZE):
+      for y in range(HEIGHT_OFFSET, WINDOW_HEIGHT, BLOCK_SIZE):
+        grid_rect = pygame.Rect((x, y), (BLOCK_SIZE, BLOCK_SIZE))
+        pygame.draw.rect(self.display, 'gray9', grid_rect, 1)
+
+    # Display snake onto the current frame
+    for pos in self.snake:
+      snake_rect = pygame.Rect((pos[0], pos[1]), (BLOCK_SIZE, BLOCK_SIZE))
+      pygame.draw.rect(self.display, 'Green', snake_rect)
+
+    # Display food onto current frame
+    food_rect = pygame.Rect((self.food[0], self.food[1]), (BLOCK_SIZE, BLOCK_SIZE))
+    pygame.draw.rect(self.display, 'Red', food_rect)
+
+    
+
+    # Display player score
+    score_text = score_font.render('Score: ' + str(self.score), True, 'White')
+    self.display.blit(score_text, (25, 25))
+
+    # Update display
+    pygame.display.flip()
 
 
   # START MENU FUNCTION
@@ -131,8 +162,10 @@ class Snake:
     self.head = [self.w / 2, self.h / 2]
     self.snake = [self.head, [self.head[0] - self.block_size, self.head[1]], [self.head[0] - (self.block_size * 2), self.head[1]]]
     self.food = None
+    self.food = None
+    self.spikes = []
+    self.time = 0
     self.placeFood()
-
 
   # MOVE FUNCTION
   def move(self, direction):
@@ -151,8 +184,7 @@ class Snake:
       x -= self.block_size
 
     # Store new coordinates as the new snake head
-    self.head = (x, y)
-
+    self.head = (x,y)
   
   # PLACE FOOD FUNCTION
   def placeFood(self):
@@ -162,17 +194,27 @@ class Snake:
 
     # Store food coordinates, generate food coordinates again if food coordinates appear in snake coordinates
     self.food = (x, y)
-    if self.food in self.snake:
+    if (self.food in self.snake) or (self.food in self.spikes):
       self.placeFood()
+      
+  #PLACE SPIKE FUNCTION
+  def placeSpike(self):
+    # Generate random x and y coordinates where spike can spawn
+    x = random.randrange(self.offset, (self.w - self.offset), self.block_size)
+    y = random.randrange(SCORE_OFFSET + self.offset, (self.h - self.offset), self.block_size)
 
+    #stores new spike cordinate unless it is inside the snake, where food already is, or is close to the snake head (within 2 squares)
+    self.spikes.append((x,y))
+    if (self.spikes[-1] in self.snake) or (self.spikes[-1] == self.food) or ((self.spikes[-1][0] < self.head[0]+3) and (self.spikes[-1][0] > self.head[0]-3)) or ((self.spikes[-1][1] < self.head[1]+3) and (self.spikes[-1][1] > self.head[1]-3)):
+      self.spikes.pop()
+      self.placeSpike()
 
   # COLLISION DETECTION
   def collision(self):
     # Return true of head collides with body or bumps into the borders
-    if (self.head in self.snake[1:]) or (self.head[1] < (self.offset + SCORE_OFFSET)) or (self.head[1] >= (self.h - self.offset)) or (self.head[0] >= (self.w - self.offset)) or (self.head[0] < self.offset):
+    if (self.head in self.snake[1:]) or (self.head[1] < (self.offset + SCORE_OFFSET)) or (self.head[1] >= (self.h - self.offset)) or (self.head[0] >= (self.w - self.offset)) or (self.head[0] < self.offset) or (self.head in self.spikes):
       return True
     return False
-
 
   # EXPAND GRID FUNCTION
   def expand(self):
@@ -222,6 +264,11 @@ class Snake:
     # Display food onto current frame
     food_rect = pygame.Rect((self.food[0], self.food[1]), (self.block_size, self.block_size))
     pygame.draw.rect(self.display, 'Red', food_rect)
+    
+    #Display spikes onto current frame
+    for spikePos in self.spikes:
+      spike_rect = pygame.Rect((spikePos[0], spikePos[1]), (self.block_size, self.block_size))
+      pygame.draw.rect(self.display, 'White', spike_rect )
 
     # Display player score
     score_text = score_font.render(f'Score: {str(self.score)}', True, 'White')
@@ -270,6 +317,12 @@ class Snake:
     else:
       self.snake.pop()
 
+    # Spike generation as an additional obstacle within the game instead of just the snake itself and the walls. will be called every 10 seconds
+    self.time += self.clock.get_time()
+    if(self.time > SPIKE_DELAY):
+      self.time -= SPIKE_DELAY
+      self.placeSpike()
+
     # End game if collision happens
     if self.collision():
       return True
@@ -283,7 +336,6 @@ class Snake:
     # Update frame & declare frame rate
     self.update()
     self.clock.tick(SPEED)
-
 
 # Main
 if __name__ == '__main__':
