@@ -54,7 +54,7 @@ class Snake:
 
     # Create a grid
     for x in range(0, WINDOW_WIDTH, BLOCK_SIZE):
-      for y in range(HEIGHT_OFFSET, WINDOW_HEIGHT, BLOCK_SIZE):
+      for y in range(self.offset, WINDOW_HEIGHT, BLOCK_SIZE):
         grid_rect = pygame.Rect((x, y), (BLOCK_SIZE, BLOCK_SIZE))
         pygame.draw.rect(self.display, 'gray9', grid_rect, 1)
 
@@ -345,7 +345,7 @@ class Snake:
       if self.expand():
         return True
       self.expand_level += 1
-      self.score_goal += 20
+      self.score_goal += 1
 
     # Update frame & declare frame rate
     self.update()
