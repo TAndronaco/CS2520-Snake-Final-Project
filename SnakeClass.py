@@ -47,36 +47,6 @@ class Snake:
     self.reset()
 
 
-  # UPDATE FUNCTION
-  def update(self):
-    # Fill current frame black
-    self.display.fill('black')
-
-    # Create a grid
-    for x in range(0, WINDOW_WIDTH, BLOCK_SIZE):
-      for y in range(self.offset, WINDOW_HEIGHT, BLOCK_SIZE):
-        grid_rect = pygame.Rect((x, y), (BLOCK_SIZE, BLOCK_SIZE))
-        pygame.draw.rect(self.display, 'gray9', grid_rect, 1)
-
-    # Display snake onto the current frame
-    for pos in self.snake:
-      snake_rect = pygame.Rect((pos[0], pos[1]), (BLOCK_SIZE, BLOCK_SIZE))
-      pygame.draw.rect(self.display, 'Green', snake_rect)
-
-    # Display food onto current frame
-    food_rect = pygame.Rect((self.food[0], self.food[1]), (BLOCK_SIZE, BLOCK_SIZE))
-    pygame.draw.rect(self.display, 'Red', food_rect)
-
-    
-
-    # Display player score
-    score_text = score_font.render('Score: ' + str(self.score), True, 'White')
-    self.display.blit(score_text, (25, 25))
-
-    # Update display
-    pygame.display.flip()
-
-
   # START MENU FUNCTION
   def start_menu(self):
     while True:
@@ -214,7 +184,7 @@ class Snake:
       self.placeFood()
       
 
-  #PLACE SPIKE FUNCTION
+  # PLACE SPIKE FUNCTION
   def placeSpike(self):
     # Generate random x and y coordinates where spike can spawn
     x = random.randrange(self.offset, (self.w - self.offset), self.block_size)
@@ -307,21 +277,21 @@ class Snake:
   def play(self):
     # Player input events
     for event in pygame.event.get():
-        # Quit game if user closes tab
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+      # Quit game if user closes tab
+      if event.type == pygame.QUIT:
+          pygame.quit()
+          exit()
 
-        # Movement key inputs
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_w and self.direction != DOWN:
-                self.next_direction = UP
-            elif event.key == pygame.K_s and self.direction != UP:
-                self.next_direction = DOWN
-            elif event.key == pygame.K_a and self.direction != RIGHT:
-                self.next_direction = LEFT
-            elif event.key == pygame.K_d and self.direction != LEFT:
-                self.next_direction = RIGHT
+      # Movement key inputs
+      if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_w and self.direction != DOWN:
+          self.next_direction = UP
+        elif event.key == pygame.K_s and self.direction != UP:
+          self.next_direction = DOWN
+        elif event.key == pygame.K_a and self.direction != RIGHT:
+          self.next_direction = LEFT
+        elif event.key == pygame.K_d and self.direction != LEFT:
+          self.next_direction = RIGHT
 
 
     # Snake movement implementation (insert new snake head into the front of the snake body array, pop the last element in the snake body array)
@@ -338,7 +308,7 @@ class Snake:
 
     # Spike generation as an additional obstacle within the game instead of just the snake itself and the walls. will be called every 10 seconds
     self.time += self.clock.get_time()
-    if(self.time > SPIKE_DELAY):
+    if (self.time > SPIKE_DELAY):
       self.time -= SPIKE_DELAY
       self.placeSpike()
 
@@ -346,11 +316,11 @@ class Snake:
     if self.collision():
       return True
     
+    # Update expand level and score goal
     if (self.expand_level != 4) and (self.score == self.score_goal):
-      if self.expand():
-        return True
+      self.expand()
       self.expand_level += 1
-      self.score_goal += 1
+      self.score_goal += 20
 
     # Update frame & declare frame rate
     self.update()
