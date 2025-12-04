@@ -181,6 +181,7 @@ class Snake:
     self.time = 0
     self.placeFood()
 
+
   # MOVE FUNCTION
   def move(self, direction):
     # Store x and y coordinates of snake head
@@ -200,6 +201,7 @@ class Snake:
     # Store new coordinates as the new snake head
     self.head = (x,y)
   
+
   # PLACE FOOD FUNCTION
   def placeFood(self):
     # Generate random x and y coordinates where food can spawn
@@ -211,6 +213,7 @@ class Snake:
     if (self.food in self.snake) or (self.food in self.spikes):
       self.placeFood()
       
+
   #PLACE SPIKE FUNCTION
   def placeSpike(self):
     # Generate random x and y coordinates where spike can spawn
@@ -223,12 +226,14 @@ class Snake:
       self.spikes.pop()
       self.placeSpike()
 
+
   # COLLISION DETECTION
   def collision(self):
     # Return true of head collides with body or bumps into the borders
     if (self.head in self.snake[1:]) or (self.head[1] < (self.offset + SCORE_OFFSET)) or (self.head[1] >= (self.h - self.offset)) or (self.head[0] >= (self.w - self.offset)) or (self.head[0] < self.offset) or (self.head in self.spikes):
       return True
     return False
+
 
   # EXPAND GRID FUNCTION
   def expand(self):
@@ -350,6 +355,8 @@ class Snake:
     # Update frame & declare frame rate
     self.update()
     self.clock.tick(SPEED)
+
+
 
 # Main
 if __name__ == '__main__':
