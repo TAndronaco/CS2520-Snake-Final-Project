@@ -1,6 +1,6 @@
 # CS2520-Snake-Final-Project
 
-This project is an extended version of the classic Snake game built with Python and Pygame. The snake moves on a grid, eats food to grow, and the playable area expands over time. Random spikes are added as extra hazards, and the game keeps track of scores across runs and displays the **top high scores** on the game over screen.
+This project is an extended version of the classic Snake game built with Python and Pygame. The snake moves on a grid, eats food to grow, and the playable area expands over time. Random spikes are added as extra hazards, and the game keeps track of scores across runs and displays the top high scores on the game over screen.
 
 ---
 
