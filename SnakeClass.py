@@ -49,31 +49,97 @@ class Snake:
 
   # START MENU FUNCTION
   def start_menu(self):
+    menu_options = ["Play", "High Scores", "Exit"]
+    selected = 0  # index of selected option
+
     while True:
-      self.display.fill('black')
+      self.display.fill("black")
 
       # Title
-      title_text = title_font.render("SNAKE", True, 'white')
-      title_rect = title_text.get_rect(center=(self.w // 2, self.h // 2 - 100))
+      title_text = title_font.render("SNAKE", True, "white")
+      title_rect = title_text.get_rect(center=(self.w // 2, self.h // 2 - 200))
       self.display.blit(title_text, title_rect)
 
-      # Instructions
-      play_text = small_font.render("Press SPACE to Start", True, 'white')
-      play_rect = play_text.get_rect(center=(self.w // 2, self.h // 2 + 50))
-      self.display.blit(play_text, play_rect)
+      # Menu options
+      for i, option in enumerate(menu_options):
+        color = "yellow" if i == selected else "white"
+        text = small_font.render(option, True, color)
+        rect = text.get_rect(center=(self.w // 2, self.h // 2 + i * 60))
+        self.display.blit(text, rect)
 
       pygame.display.update()
 
-      # Event handling
+      # Input handling
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
           pygame.quit()
           exit()
+
         if event.type == pygame.KEYDOWN:
-          if event.key == pygame.K_SPACE:
-            return  # leave start menu and begin game
+
+          # W → Up
+          if event.key == pygame.K_w:
+            selected = (selected - 1) % len(menu_options)
+
+          # S → Down
+          elif event.key == pygame.K_s:
+            selected = (selected + 1) % len(menu_options)
+
+          # SPACE → Select
+          elif event.key == pygame.K_SPACE:
+            choice = menu_options[selected]
+
+            if choice == "Play":
+              return  # start game
+
+            elif choice == "High Scores":
+              self.high_scores_menu()
+
+            elif choice == "Exit":
+              pygame.quit()
+              exit()
 
       self.clock.tick(SPEED)
+
+
+  # HIGH SCORES MENU FUNCTION
+  def high_scores_menu(self):
+    top_scores = get_top_scores(0)  # pass dummy value because function requires 1 argument
+
+    while True:
+      self.display.fill("black")
+
+      # Title
+      hs_title = title_font.render("HIGH SCORES", True, "white")
+      hs_rect = hs_title.get_rect(center=(self.w // 2, 150))
+      self.display.blit(hs_title, hs_rect)
+
+      # Scores List
+      for i, s in enumerate(top_scores):
+        text = small_font.render(f"{i+1}. {s}", True, "white")
+        rect = text.get_rect(center=(self.w // 2, 250 + i * 50))
+        self.display.blit(text, rect)
+
+      # Back button (updated)
+      back_text = small_font.render("Press Q to Return to Main Menu", True, "yellow")
+      back_rect = back_text.get_rect(center=(self.w // 2, self.h - 150))
+      self.display.blit(back_text, back_rect)
+
+      pygame.display.update()
+
+      # Input Handling
+      for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+          pygame.quit()
+          exit()
+
+        if event.type == pygame.KEYDOWN:
+          if event.key == pygame.K_q:     # NEW CONTROL
+            return  # go back to start menu
+
+      self.clock.tick(SPEED)
+
+
 
 
   # GAME OVER MENU FUNCTION
@@ -109,10 +175,10 @@ class Snake:
       restart_rect = restart_text.get_rect(center=(self.w // 2, self.h // 2 + 40 + len(top_score) * 40 + 40))
       self.display.blit(restart_text, restart_rect)
 
-      # Quit instructions
-      quit_text = small_font.render("Press Q to Quit", True, 'white')
-      quit_rect = quit_text.get_rect(center=(self.w // 2, self.h // 2 + 40 + len(top_score) * 40 + 100))
-      self.display.blit(quit_text, quit_rect)
+      # Main Menu instructions (UPDATED)
+      menu_text = small_font.render("Press Q to Return to Main Menu", True, 'white')
+      menu_rect = menu_text.get_rect(center=(self.w // 2, self.h // 2 + 40 + len(top_score) * 40 + 100))
+      self.display.blit(menu_text, menu_rect)
 
       pygame.display.update()
 
@@ -124,14 +190,15 @@ class Snake:
 
         if event.type == pygame.KEYDOWN:
           if event.key == pygame.K_SPACE:
-            self.reset()
-            return  # Exit menu and restart the game
+            return "restart"
+
 
           if event.key == pygame.K_q:
-            pygame.quit()
-            exit()
+            return "menu"  # Signal main loop to return to main menu
 
       self.clock.tick(SPEED)
+
+
 
 
   # RESET FUNCTION
@@ -154,9 +221,7 @@ class Snake:
 
   # MOVE FUNCTION
   def move(self, direction):
-    # Store x and y coordinates of snake head
-    x = self.head[0]
-    y = self.head[1]
+    x, y = self.head
 
     # Update coordinates based on movement direction
     if direction == UP:
@@ -168,8 +233,22 @@ class Snake:
     elif direction == LEFT:
       x -= self.block_size
 
+    # SCREEN WRAP LOGIC
+    # Left/Right wrap
+    if x < self.offset:
+      x = self.w - self.offset - self.block_size
+    elif x >= self.w - self.offset:
+      x = self.offset
+
+    # Top/Bottom wrap
+    if y < self.offset + SCORE_OFFSET:
+      y = self.h - self.offset - self.block_size
+    elif y >= self.h - self.offset:
+      y = self.offset + SCORE_OFFSET
+
     # Store new coordinates as the new snake head
-    self.head = (x,y)
+    self.head = (x, y)
+
   
 
   # PLACE FOOD FUNCTION
@@ -199,10 +278,11 @@ class Snake:
 
   # COLLISION DETECTION
   def collision(self):
-    # Return true of head collides with body or bumps into the borders
-    if (self.head in self.snake[1:]) or (self.head[1] < (self.offset + SCORE_OFFSET)) or (self.head[1] >= (self.h - self.offset)) or (self.head[0] >= (self.w - self.offset)) or (self.head[0] < self.offset) or (self.head in self.spikes):
+    # Only detect body collision or spike collision
+    if (self.head in self.snake[1:]) or (self.head in self.spikes):
       return True
     return False
+
 
 
   # EXPAND GRID FUNCTION
@@ -330,10 +410,30 @@ class Snake:
 
 # Main
 if __name__ == '__main__':
-  game = Snake()
-  game.start_menu()
-  while True:
-    game_over = game.play()
+    game = Snake()
 
-    if game_over:
-      game.game_over_menu()
+    while True:
+        # --- MAIN MENU ---
+        game.start_menu()  # show menu
+        game.reset()       # prepare new game
+
+        # --- GAMEPLAY LOOP ---
+        playing = True
+        while playing:
+            game_over = game.play()
+
+            if game_over:
+                result = game.game_over_menu()
+
+                # Q => return to main menu
+                if result == "menu":
+                    playing = False  # exit gameplay loop, go back to top to main menu
+
+                # SPACE => restart game immediately
+                elif result == "restart":
+                    game.reset()  # NEW GAME
+                    continue
+
+                else:
+                    playing = False
+
