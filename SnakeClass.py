@@ -13,7 +13,6 @@ SCORE_OFFSET = 100
 OFFSET = 320
 BLOCK_SIZE = 20
 SPEED = 10
-SPIKE_DELAY = 10000
 MAX_SPIKE_DELAY = 8000
 MIN_SPIKE_DELAY = 3000
 INITIAL_SPIKE_THRESHOLD = 3
@@ -314,6 +313,7 @@ class Snake:
       self.clock.tick(SPEED)
       
 
+
       # Break after the text appears 10 times, adjust the offset to make the grid bigger, then return
       if num_times == 10:
         self.offset -= 80
@@ -406,6 +406,13 @@ class Snake:
 
 
 
+    #increases the spawn rate of spike if there are enough spike generated
+    if self.spikeThreshold < len(self.spikes):
+      self.spikeThreshold += INITIAL_SPIKE_THRESHOLD
+      if self.spikeTimer > MIN_SPIKE_DELAY:
+        self.spikeTimer -= 500
+      print("spike timer is ", self.spikeTimer)
+
     # End game if collision happens
     if self.collision():
       return True
@@ -416,39 +423,12 @@ class Snake:
       self.expand_level += 1
       self.score_goal += 20
 
+
     # Update frame & declare frame rate
     self.update()
     self.clock.tick(SPEED)
 
-# --- Revival / Gambling System Add-On ---
-revive_base = 50     # starting chance
-revive_step = 10     # how much it drops after a successful revive
-revive_chance = revive_base
 
-def reset_revive():
-    """Reset revive chance back to 50% (called when a run really ends)."""
-    global revive_chance
-    revive_chance = revive_base
-
-def try_revive():
-    """
-    Try to revive once when the snake dies.
-    - Uses current revive_chance (starts at 50%).
-    - On SUCCESS: returns True and lowers revive_chance by 10% (down to 0 min).
-    - On FAIL: returns False and leaves revive_chance as-is (main loop will reset it).
-    Returns: (success_bool, chance_used)
-    """
-    global revive_chance
-    roll = random.randint(1, 100)
-    chance_now = revive_chance
-    print(f"Revive chance: {chance_now}% | Roll: {roll}")
-
-    if roll <= chance_now:
-        # success → next death has 10% less chance
-        revive_chance = max(0, revive_chance - revive_step)
-        return True, chance_now
-    else:
-        return False, chance_now
 
 # Main
 if __name__ == '__main__':
@@ -465,44 +445,6 @@ if __name__ == '__main__':
             game_over = game.play()
 
             if game_over:
-                # First: try the gambling revive
-                success, percent = try_revive()
-
-                if success:
-                  # Show REVIVED popup with the percent that was used
-                  game.display.fill('black')
-                  msg = title_font.render(f"REVIVED! ({percent}%)", True, 'green')
-                  msg_rect = msg.get_rect(center=(game.w // 2, game.h // 2))
-                  game.display.blit(msg, msg_rect)
-                  pygame.display.update()
-                  pygame.time.delay(1500)  # 1.5 seconds
-
-                  # --- Soft revive: keep score, grid, and snake length ---
-                  current_length = len(game.snake)
-
-                  # Reset movement + head position
-                  game.direction = RIGHT
-                  game.next_direction = RIGHT
-                  game.head = [game.w / 2, game.h / 2]
-
-                  # Rebuild snake with the SAME LENGTH, centered
-                  game.snake = [game.head]
-                  for i in range(1, current_length):
-                    game.snake.append([game.head[0] - i * game.block_size, game.head[1]])
-
-                  # Clear spikes and timer, respawn food
-                  game.spikes = []
-                  game.time = 0
-                  game.placeFood()
-
-                  # score, expand_level, score_goal, offset all stay as they are
-                  continue  # go back into the loop and keep playing this run
-
-
-                # If revive FAILS:
-                # - reset revive chance back to 50% for the next run
-                # - go to normal game over menu
-                reset_revive()
                 result = game.game_over_menu()
 
                 # Q => return to main menu
@@ -516,5 +458,4 @@ if __name__ == '__main__':
 
                 else:
                     playing = False
-
 
