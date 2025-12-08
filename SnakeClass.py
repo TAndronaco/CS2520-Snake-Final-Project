@@ -14,6 +14,9 @@ OFFSET = 320
 BLOCK_SIZE = 20
 SPEED = 10
 SPIKE_DELAY = 10000
+MAX_SPIKE_DELAY = 8000
+MIN_SPIKE_DELAY = 3000
+INITIAL_SPIKE_THRESHOLD = 3
 
 # INITIALIZE PYGAME
 pygame.init()
@@ -215,6 +218,8 @@ class Snake:
     self.food = None
     self.food = None
     self.spikes = []
+    self.spikeTimer = MAX_SPIKE_DELAY
+    self.spikeThreshold = INITIAL_SPIKE_THRESHOLD
     self.time = 0
     self.placeFood()
 
@@ -307,6 +312,7 @@ class Snake:
       # Update Display
       pygame.display.update()
       self.clock.tick(SPEED)
+      
 
       # Break after the text appears 10 times, adjust the offset to make the grid bigger, then return
       if num_times == 10:
@@ -388,9 +394,17 @@ class Snake:
 
     # Spike generation as an additional obstacle within the game instead of just the snake itself and the walls. will be called every 10 seconds
     self.time += self.clock.get_time()
-    if (self.time > SPIKE_DELAY):
-      self.time -= SPIKE_DELAY
+    if self.time > self.spikeTimer:
+      self.time -= self.spikeTimer
       self.placeSpike()
+        #increases the spawn rate of spike if there are enough spike generated
+    if self.spikeThreshold < len(self.spikes):
+      self.spikeThreshold += INITIAL_SPIKE_THRESHOLD
+      if self.spikeTimer > MIN_SPIKE_DELAY:
+        self.spikeTimer -= 500
+      print("spike timer is ", self.spikeTimer)
+
+
 
     # End game if collision happens
     if self.collision():
