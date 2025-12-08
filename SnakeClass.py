@@ -16,6 +16,8 @@ SPEED = 10
 MAX_SPIKE_DELAY = 8000
 MIN_SPIKE_DELAY = 3000
 INITIAL_SPIKE_THRESHOLD = 3
+MAX_SPEED = 25   
+
 
 # INITIALIZE PYGAME
 pygame.init()
@@ -194,7 +196,6 @@ class Snake:
           if event.key == pygame.K_SPACE:
             return "restart"
 
-
           if event.key == pygame.K_q:
             return "menu"  # Signal main loop to return to main menu
 
@@ -212,9 +213,15 @@ class Snake:
     self.offset = OFFSET
     self.direction = RIGHT
     self.next_direction = self.direction
-    self.head = [self.w / 2, self.h / 2]
-    self.snake = [self.head, [self.head[0] - self.block_size, self.head[1]], [self.head[0] - (self.block_size * 2), self.head[1]]]
-    self.food = None
+
+    # use integer center and tuples for positions
+    self.head = (self.w // 2, self.h // 2)
+    self.snake = [
+      self.head,
+      (self.head[0] - self.block_size, self.head[1]),
+      (self.head[0] - (self.block_size * 2), self.head[1])
+    ]
+
     self.food = None
     self.spikes = []
     self.spikeTimer = MAX_SPIKE_DELAY
@@ -222,10 +229,19 @@ class Snake:
     self.time = 0
     self.placeFood()
 
+    # wrapping + expansion control
+    self.just_wrapped = False
+    self.pending_expand = False
+
+    self.speed = SPEED   # dynamic speed
+    self.speed_level = 0 # how many times speed increased
+
+
 
   # MOVE FUNCTION
   def move(self, direction):
     x, y = self.head
+    self.just_wrapped = False  # reset each frame
 
     # Update coordinates based on movement direction
     if direction == UP:
@@ -237,23 +253,48 @@ class Snake:
     elif direction == LEFT:
       x -= self.block_size
 
+    wrapped = False
+
     # SCREEN WRAP LOGIC
     # Left/Right wrap
     if x < self.offset:
       x = self.w - self.offset - self.block_size
+      wrapped = True
     elif x >= self.w - self.offset:
       x = self.offset
+      wrapped = True
 
     # Top/Bottom wrap
     if y < self.offset + SCORE_OFFSET:
       y = self.h - self.offset - self.block_size
+      wrapped = True
     elif y >= self.h - self.offset:
       y = self.offset + SCORE_OFFSET
+      wrapped = True
 
     # Store new coordinates as the new snake head
     self.head = (x, y)
-
+    self.just_wrapped = wrapped
   
+
+  # SAFETY CHECK FOR GRID EXPANSION
+  def safe_to_expand(self):
+    # If snake wrapped THIS TURN → unsafe
+    if self.just_wrapped:
+      return False
+
+    # Check ALL snake body segments; none may be on the walls
+    for (x, y) in self.snake:
+      # Touching left or right wall
+      if x <= self.offset or x >= (self.w - self.offset - self.block_size):
+        return False
+      # Touching top or bottom wall
+      if y <= (self.offset + SCORE_OFFSET) or y >= (self.h - self.offset - self.block_size):
+        return False
+
+    # If none of the body is touching a wall → safe
+    return True
+
 
   # PLACE FOOD FUNCTION
   def placeFood(self):
@@ -310,9 +351,7 @@ class Snake:
 
       # Update Display
       pygame.display.update()
-      self.clock.tick(SPEED)
-      
-
+      self.clock.tick(self.speed)
 
       # Break after the text appears 10 times, adjust the offset to make the grid bigger, then return
       if num_times == 10:
@@ -389,6 +428,16 @@ class Snake:
     if self.head == self.food:
       self.placeFood()
       self.score += 1
+
+      # SPEED-UP every 3 apples
+      if self.score % 3 == 0:
+          if self.speed < MAX_SPEED:
+              self.speed += 1
+              print(f"Speed increased to {self.speed}")
+          else:
+              print("Max speed reached")
+
+
     else:
       self.snake.pop()
 
@@ -397,14 +446,6 @@ class Snake:
     if self.time > self.spikeTimer:
       self.time -= self.spikeTimer
       self.placeSpike()
-        #increases the spawn rate of spike if there are enough spike generated
-    if self.spikeThreshold < len(self.spikes):
-      self.spikeThreshold += INITIAL_SPIKE_THRESHOLD
-      if self.spikeTimer > MIN_SPIKE_DELAY:
-        self.spikeTimer -= 500
-      print("spike timer is ", self.spikeTimer)
-
-
 
     #increases the spawn rate of spike if there are enough spike generated
     if self.spikeThreshold < len(self.spikes):
@@ -417,16 +458,22 @@ class Snake:
     if self.collision():
       return True
     
-    # Update expand level and score goal
-    if (self.expand_level != 4) and (self.score == self.score_goal):
+    # --- GRID EXPANSION LOGIC ---
+
+    # 1) Once score goal is reached, mark expansion as pending (stays pending)
+    if (self.expand_level != 4) and (self.score >= self.score_goal):
+      self.pending_expand = True
+
+    # 2) Only actually expand on a later, SAFE frame
+    if self.pending_expand and self.safe_to_expand():
       self.expand()
       self.expand_level += 1
       self.score_goal += 20
-
+      self.pending_expand = False
 
     # Update frame & declare frame rate
     self.update()
-    self.clock.tick(SPEED)
+    self.clock.tick(self.speed)
 
 
 
@@ -458,4 +505,3 @@ if __name__ == '__main__':
 
                 else:
                     playing = False
-
