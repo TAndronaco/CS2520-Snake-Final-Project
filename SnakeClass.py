@@ -311,6 +311,7 @@ class Snake:
       # Update Display
       pygame.display.update()
       self.clock.tick(SPEED)
+      
 
 
       # Break after the text appears 10 times, adjust the offset to make the grid bigger, then return
@@ -396,6 +397,14 @@ class Snake:
     if self.time > self.spikeTimer:
       self.time -= self.spikeTimer
       self.placeSpike()
+        #increases the spawn rate of spike if there are enough spike generated
+    if self.spikeThreshold < len(self.spikes):
+      self.spikeThreshold += INITIAL_SPIKE_THRESHOLD
+      if self.spikeTimer > MIN_SPIKE_DELAY:
+        self.spikeTimer -= 500
+      print("spike timer is ", self.spikeTimer)
+
+
 
     #increases the spawn rate of spike if there are enough spike generated
     if self.spikeThreshold < len(self.spikes):
