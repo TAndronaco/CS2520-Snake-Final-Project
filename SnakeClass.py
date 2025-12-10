@@ -488,10 +488,30 @@ if __name__ == "__main__":
                     game.next_direction = RIGHT
 
                     game.head = (game.w//2, game.h//2)
-                    game.snake = [game.head]
+                    game.snake = []
 
-                    for i in range(1, length):
-                        game.snake.append((game.head[0] - i*BLOCK_SIZE, game.head[1]))
+                    yOffset = 0
+                    bounce = 0
+                    extremeSegment = game.head[0]
+                    for i in range(0,length):
+                        if yOffset % 2 == 0:
+                            game.snake.append((extremeSegment - bounce*BLOCK_SIZE, game.head[1] + yOffset*BLOCK_SIZE ))
+                            if(extremeSegment - (bounce +1 ) *BLOCK_SIZE ) <= game.offset:
+                                yOffset += 1
+                                extremeSegment = game.offset
+                                bounce = 0
+                            else:
+                                bounce += 1
+                        else:
+                            game.snake.append(( extremeSegment + (bounce*BLOCK_SIZE)  , game.head[1] + yOffset*BLOCK_SIZE ))
+                            if( extremeSegment + (bounce +1 ) *BLOCK_SIZE) >= game.w - game.offset:
+                                yOffset += 1
+                                extremeSegment = game.w - game.offset
+                                bounce = 0
+                            else:
+                                bounce += 1
+
+                    
 
                     game.spikes = []
                     game.time = 0
