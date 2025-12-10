@@ -490,23 +490,25 @@ if __name__ == "__main__":
                     game.head = (game.w//2, game.h//2)
                     game.snake = []
 
+                    #fits snake onto play area by filling the row above once we can not extend further in the current row
+                    #going the opposite direction so sequential snake segments stay connected 
                     yOffset = 0
                     bounce = 0
-                    extremeSegment = game.head[0]
+                    longestRowSegment = game.head[0]
                     for i in range(0,length):
                         if yOffset % 2 == 0:
-                            game.snake.append((extremeSegment - bounce*BLOCK_SIZE, game.head[1] + yOffset*BLOCK_SIZE ))
-                            if(extremeSegment - (bounce +1 ) *BLOCK_SIZE ) <= game.offset:
+                            game.snake.append((longestRowSegment - bounce*BLOCK_SIZE, game.head[1] + yOffset*BLOCK_SIZE ))
+                            if(longestRowSegment - (bounce +1 ) *BLOCK_SIZE ) <= game.offset:
                                 yOffset += 1
-                                extremeSegment = game.offset
+                                longestRowSegment = game.offset
                                 bounce = 0
                             else:
                                 bounce += 1
                         else:
-                            game.snake.append(( extremeSegment + (bounce*BLOCK_SIZE)  , game.head[1] + yOffset*BLOCK_SIZE ))
-                            if( extremeSegment + (bounce +1 ) *BLOCK_SIZE) >= game.w - game.offset:
+                            game.snake.append(( longestRowSegment + (bounce*BLOCK_SIZE)  , game.head[1] + yOffset*BLOCK_SIZE ))
+                            if( longestRowSegment + (bounce +1 ) *BLOCK_SIZE) >= game.w - game.offset:
                                 yOffset += 1
-                                extremeSegment = game.w - game.offset
+                                longestRowSegment = game.w - game.offset
                                 bounce = 0
                             else:
                                 bounce += 1
